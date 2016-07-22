@@ -42,17 +42,17 @@ Param(
 #
 #_______________________________________________________
 #
-#Prompting for Username
+# Prompting for Username
 #
    Write-host "Please enter your username"
    $username = read-host
 #
-#Prompting for Password
+# Prompting for Password
 #
    read-host -assecurestring | convertfrom-securestring | out-file C:\Scripts\securestring.txt
    $password = cat C:\Scripts\securestring.txt | convertto-securestring
 #
-#Constructing credentials object
+# Constructing credentials object
 #
    $cred = new-object -typename System.Management.Automation.PSCredential `
          -argumentlist $username, $password
