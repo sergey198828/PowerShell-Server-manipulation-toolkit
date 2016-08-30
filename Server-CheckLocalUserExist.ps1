@@ -106,4 +106,5 @@ Param(
          write-host "$User account not found on $HostName"
          Add-Content $OutputFile "$Hostname,No”;
       }
+      $accounts = $null
    }
