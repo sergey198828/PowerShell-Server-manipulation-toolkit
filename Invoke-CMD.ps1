@@ -2,21 +2,21 @@
 #
 #  .SYNOPSIS
 #
-#  Invoke-CMD -Server -Command [-User=$kiyanser]
+#  Invoke-CMD -ScriptFile [-InputFile="ScriptDirectory\hosts.csv"] [-User]
 #
 #  .DESCRIPTION
 #
-#  PowerShell script executes specified command on specifies server with specified credentials 
+#  PowerShell script executes specified script on CSV specified servers with specified credentials 
 #
 #  .EXAMPLE
 #
-#  1. Execute ipconfig /all on issw4100 from $kiyanser
+#  1. Execute C:\Scripts\test.ps1 script on ScriptDirectory\hosts.csv hosts from $kiaynser credentials
 #
-#     Invoke-CMD -Server "issw4100" -Command {ipconfig /all}
+#     Invoke-CMD -ScriptFile "C:\Scripts\test.ps1"
 #
-#  2. Execute ipconfig /all on issw4100 from user1
+#  2. Execute C:\Scripts\test.ps1 script on C:\hosts.csv hosts from $testaccount credentials
 #
-#     Invoke-CMD -Server "issw4100" -Command {ipconfig /all"} -User "user1"
+#     Invoke-CMD -ScriptFile "C:\Scripts\test.ps1" -InputFile "C:\Scripts\test.ps1" -User "`$testaccount"
 #
 #_______________________________________________________
 #  Start of parameters block
@@ -24,20 +24,20 @@
 [CmdletBinding()]
 Param(
 #
-#  Server
+#  Script File
 #
    [Parameter(Mandatory=$True)]
-   [string]$server,
+   [string]$ScriptFile,
 #
-#  Command
+#  Input file
 #
-   [Parameter(Mandatory=$True)]
-   [System.Management.Automation.ScriptBlock]$command,
+   [Parameter(Mandatory=$False)]
+   [string]$InputFile=$PSScriptRoot+"\hosts.csv",
 #
 #  User
 #
    [Parameter(Mandatory=$False)]
-   [string]$user='$kiyanser'
+   [string]$user=''
 )
 #
 # End of parameters block
@@ -64,6 +64,15 @@ Param(
    $credential = new-object -typename System.Management.Automation.PSCredential `
          -argumentlist $username, $password
 #
+# Looping over servers
+#
+   Write-Host "Reading file "$InputFile
+   $Hosts = import-csv $InputFile
+   Foreach($Line in $Hosts){
+   $server = $Line.Host
+#
 # Executing command
 #
-   Invoke-Command -ComputerName $server -ScriptBlock $command -Credential $credential
+     Write-Host "Executing on "$server
+     Invoke-Command -ComputerName $server -FilePath $ScriptFile -Credential $credential
+   }
