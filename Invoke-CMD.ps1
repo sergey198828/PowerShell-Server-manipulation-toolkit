@@ -2,7 +2,7 @@
 #
 #  .SYNOPSIS
 #
-#  Invoke-CMD -ScriptFile [-InputFile="ScriptDirectory\hosts.csv"] [-User]
+#  Invoke-CMD -ScriptFile [-InputFile="ScriptDirectory\hosts.csv"] [-OutputFile="ScriptDirectory\results.csv"] [-User]
 #
 #  .DESCRIPTION
 #
@@ -34,6 +34,11 @@ Param(
    [Parameter(Mandatory=$False)]
    [string]$InputFile=$PSScriptRoot+"\hosts.csv",
 #
+#  Output file
+#
+   [Parameter(Mandatory=$False)]
+   [string]$OutputFile=$PSScriptRoot+"\results.csv",
+#
 #  User
 #
    [Parameter(Mandatory=$False)]
@@ -64,15 +69,27 @@ Param(
    $credential = new-object -typename System.Management.Automation.PSCredential `
          -argumentlist $username, $password
 #
-# Looping over servers
+# Reading input file
 #
    Write-Host "Reading file "$InputFile
    $Hosts = import-csv $InputFile
+#
+# Prepare output file
+#
+   write-host "Writing file "$OutputFile
+   Add-Content $OutputFile “Server,Result”;
+#
+# Looping over servers
+#
    Foreach($Line in $Hosts){
    $server = $Line.Host
 #
 # Executing command
 #
      Write-Host "Executing on "$server
-     Invoke-Command -ComputerName $server -FilePath $ScriptFile -Credential $credential
+     $output = Invoke-Command -ComputerName $server -FilePath $ScriptFile -Credential $credential 4>&1
+#
+# Writing to file
+#
+     Add-Content $OutputFile "$server,$output”;
    }
