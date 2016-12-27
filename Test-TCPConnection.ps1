@@ -1,4 +1,4 @@
-﻿#requires -version 3
+﻿#requires -version 4
 #
 #  .SYNOPSIS
 #
@@ -44,7 +44,7 @@ Param(
 #  Frequency in seconds
 #
    [Parameter(Mandatory=$False)]
-   [int]$frequencySec = 6
+   [int]$frequencySec = 60
 )
 #
 # End of parameters block
@@ -56,25 +56,39 @@ Param(
    write-host "Writing file "$OutputFile
    Add-Content $OutputFile "DateTime, Server, RemotePort, Result"
 #
+# Inform frequency time
+#
+   write-host "Frequency "$frequencySec" seconds"
+#
 #Infinite loop
 #
    $i = 1
    while($i -lt 9999){
-
+#
 # Getting date and time
-
+#
      $dateTime = Get-Date
-
-# Testing RDP connection to server deuntp096
-
+#
+# Testing TCP connection to specified server and port
+#
      $test = Test-NetConnection -ComputerName $destinationHost  -Port $destinationPort 
-
+#
 # Writing to file
-     $Result = $test.TcpTestSucceeded
+#
+     if($test.TcpTestSucceeded -eq "True"){
+       $Result = "Success"
+     }
+     else{
+       $Result = "Failed"
+     }
      Add-Content $OutputFile "$dateTime, $destinationHost, $destinationPort, $Result"
+#
 # Pending
+#
      Start-Sleep -s $frequencySec
+#
 # Finalaze iteration
+#
      Write-Host "$i sample collected"
      $i++
    }
